@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import { generateNoise } from '../src/generateNoise.js';
 import { writeWav, applyEnvelope, convertToStereo } from '../src/wavWriter.js';
 import { generateRainLayer, generateBirdLayer, generateWaterLayer, mixAmbientLayers, LayerOptions } from '../src/ambientLayers.js';
-import { generateAIAmbientLayer, AILayerOptions } from '../src/aiLayers.js';
+import { generateTextToAudioLayer, createTextToAudioClient } from '../src/textToAudio.js';
 const VERSION = '0.1.0';
 const program = new Command();
 
@@ -92,31 +92,36 @@ if (options.ambient) {
   }
 }
 
-// Generate AI ambient layers if requested
+// Generate text-to-audio layers if requested
 if (options.aiAmbient) {
-  const aiDescriptions = options.aiAmbient.split(',').map((s: string) => s.trim());
-  const aiOptions: AILayerOptions = {
+  const textDescriptions = options.aiAmbient.split(',').map((s: string) => s.trim());
+  const textToAudioClient = createTextToAudioClient();
+  
+  const layerOptions: LayerOptions & { style?: string } = {
     intensity: options.aiIntensity || 0.6,
     variation: options.ambientVariation || 0.3,
     style: options.aiStyle as 'natural' | 'ethereal' | 'cinematic' | 'abstract',
     seed: options.seed
   };
   
-  console.log('   🤖 Generating AI-enhanced ambient layers...');
+  console.log('   🎤 Generating text-to-audio layers...');
+  if (!textToAudioClient) {
+    console.log('     💡 Tip: Set HUGGINGFACE_API_TOKEN, OPENAI_API_KEY, or REPLICATE_API_TOKEN for real text-to-audio');
+  }
   
-  for (const description of aiDescriptions) {
+  for (const description of textDescriptions) {
     try {
-      console.log(`     🎨 AI layer: "${description}"...`);
-      const aiLayer = await generateAIAmbientLayer(noiseBuffer, sampleRate, aiOptions, description);
-      ambientLayers.push(aiLayer);
+      console.log(`     🎨 Text-to-audio: "${description}"...`);
+      const audioLayer = await generateTextToAudioLayer(description, noiseBuffer, sampleRate, layerOptions, textToAudioClient || undefined);
+      ambientLayers.push(audioLayer);
     } catch (error) {
-      console.error(`     ⚠️  AI layer failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`     ⚠️  Text-to-audio failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   
   if (ambientLayers.length > 0) {
-    console.log('   🎵 Mixing AI layers with existing audio...');
-    noiseBuffer = mixAmbientLayers(noiseBuffer, ambientLayers.slice(-aiDescriptions.length), 0.6, 0.4);
+    console.log('   🎵 Mixing text-to-audio layers with existing audio...');
+    noiseBuffer = mixAmbientLayers(noiseBuffer, ambientLayers.slice(-textDescriptions.length), 0.6, 0.4);
   }
 }
 
