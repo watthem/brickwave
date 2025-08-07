@@ -12,7 +12,7 @@ program
   .version(VERSION)
   .option('--noise <type>', 'Noise type: white, pink, or brown')
   .option('--duration <seconds>', 'Duration in seconds', parseFloat)
-  .option('--samplerate <rate>', 'Sample rate in Hz', parseInt, 44100)
+  .option('--samplerate <rate>', 'Sample rate in Hz', (val) => parseInt(val) || 44100, 44100)
   .option('--out <path>', 'Output .wav file path')
   .option('--seed <number>', 'Seed for deterministic generation', parseInt)
   .option('--stereo', 'Generate stereo output')
@@ -46,7 +46,10 @@ if (options.duration <= 0) {
 console.log(`🎵 Generating ${options.noise} noise...`);
 const startTime = Date.now();
 
-let noiseBuffer = generateNoise(options.noise, options.duration, options.samplerate, options.seed);
+// Ensure sample rate is a number
+const sampleRate = parseInt(options.samplerate) || 44100;
+
+let noiseBuffer = generateNoise(options.noise, options.duration, sampleRate, options.seed);
 
 // Generate ambient layers if requested
 const ambientLayers = [];
@@ -64,15 +67,15 @@ if (options.ambient) {
     switch (layerType.toLowerCase()) {
       case 'rain':
         console.log('     ☔ Rain layer...');
-        ambientLayers.push(generateRainLayer(noiseBuffer, options.samplerate, layerOptions));
+        ambientLayers.push(generateRainLayer(noiseBuffer, sampleRate, layerOptions));
         break;
       case 'birds':
         console.log('     🐦 Bird layer...');
-        ambientLayers.push(generateBirdLayer(noiseBuffer, options.samplerate, layerOptions));
+        ambientLayers.push(generateBirdLayer(noiseBuffer, sampleRate, layerOptions));
         break;
       case 'water':
         console.log('     🌊 Water layer...');
-        ambientLayers.push(generateWaterLayer(noiseBuffer, options.samplerate, layerOptions));
+        ambientLayers.push(generateWaterLayer(noiseBuffer, sampleRate, layerOptions));
         break;
       default:
         console.error(`   ⚠️  Unknown ambient layer: ${layerType}`);
@@ -88,7 +91,7 @@ if (options.ambient) {
 // Apply envelope if requested
 if (options.fadeIn > 0 || options.fadeOut > 0) {
   console.log(`   🎚️  Applying envelope (fade in: ${options.fadeIn}s, fade out: ${options.fadeOut}s)`);
-  noiseBuffer = applyEnvelope(noiseBuffer, options.fadeIn, options.fadeOut, options.samplerate);
+  noiseBuffer = applyEnvelope(noiseBuffer, options.fadeIn, options.fadeOut, sampleRate);
 }
 
 // Convert to stereo if requested
@@ -101,14 +104,15 @@ if (options.stereo) {
 
 writeWav({ 
   data: noiseBuffer, 
-  sampleRate: options.samplerate, 
+  sampleRate: sampleRate, 
   outPath: options.out,
   channels
 });
 
 const duration = Date.now() - startTime;
+
 console.log(`✅ Generated ${options.noise} noise`);
-console.log(`   📊 ${options.duration}s @ ${options.samplerate}Hz ${channels === 2 ? '(stereo)' : '(mono)'}`);
+console.log(`   📊 ${options.duration}s @ ${sampleRate}Hz ${channels === 2 ? '(stereo)' : '(mono)'}`);
 console.log(`   📁 ${options.out}`);
 console.log(`   ⚡ Generated in ${duration}ms`);
 if (options.seed) {
