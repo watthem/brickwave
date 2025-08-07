@@ -10,7 +10,10 @@
     "start": "node dist/bin/cli.js",
     "build": "tsc",
     "dev": "npx ts-node --esm bin/cli.ts",
-    "test": "node test/snapshot.test.js"
+    "test": "node test/snapshot.test.js",
+    "library": "node scripts/generate-library.js",
+    "library:dev": "BRICKWAVE_VERSION=dev node scripts/generate-library.js",
+    "compare": "node scripts/compare-versions.js"
   },
   "dependencies": {
     "commander": "^11.0.0"

@@ -1,0 +1,156 @@
+{
+  "version": "dev",
+  "timestamp": "2025-08-07T05:12:19.958Z",
+  "total": 21,
+  "success": 21,
+  "errors": 0,
+  "samples": [
+    {
+      "name": "white-noise-basic",
+      "file": "samples/vdev/white-noise-basic.wav",
+      "description": "Basic white noise with seed for testing",
+      "status": "success",
+      "duration": 1448
+    },
+    {
+      "name": "pink-noise-basic",
+      "file": "samples/vdev/pink-noise-basic.wav",
+      "description": "Basic pink noise with seed for testing",
+      "status": "success",
+      "duration": 2021
+    },
+    {
+      "name": "brown-noise-basic",
+      "file": "samples/vdev/brown-noise-basic.wav",
+      "description": "Basic brown noise with seed for testing",
+      "status": "success",
+      "duration": 1687
+    },
+    {
+      "name": "white-noise-stereo",
+      "file": "samples/vdev/white-noise-stereo.wav",
+      "description": "Stereo white noise for spatial testing",
+      "status": "success",
+      "duration": 1842
+    },
+    {
+      "name": "pink-noise-stereo",
+      "file": "samples/vdev/pink-noise-stereo.wav",
+      "description": "Stereo pink noise for natural ambience",
+      "status": "success",
+      "duration": 2550
+    },
+    {
+      "name": "brown-noise-stereo",
+      "file": "samples/vdev/brown-noise-stereo.wav",
+      "description": "Stereo brown noise for deep bass",
+      "status": "success",
+      "duration": 1657
+    },
+    {
+      "name": "pink-noise-fade-in",
+      "file": "samples/vdev/pink-noise-fade-in.wav",
+      "description": "Pink noise with fade-in effect",
+      "status": "success",
+      "duration": 2124
+    },
+    {
+      "name": "pink-noise-fade-out",
+      "file": "samples/vdev/pink-noise-fade-out.wav",
+      "description": "Pink noise with fade-out effect",
+      "status": "success",
+      "duration": 1842
+    },
+    {
+      "name": "pink-noise-fade-both",
+      "file": "samples/vdev/pink-noise-fade-both.wav",
+      "description": "Pink noise with both fade-in and fade-out",
+      "status": "success",
+      "duration": 1586
+    },
+    {
+      "name": "rain-layer-basic",
+      "file": "samples/vdev/rain-layer-basic.wav",
+      "description": "Basic rain layer with pink noise base",
+      "status": "success",
+      "duration": 1973
+    },
+    {
+      "name": "birds-layer-basic",
+      "file": "samples/vdev/birds-layer-basic.wav",
+      "description": "Basic birds layer with pink noise base",
+      "status": "success",
+      "duration": 1926
+    },
+    {
+      "name": "water-layer-basic",
+      "file": "samples/vdev/water-layer-basic.wav",
+      "description": "Basic water layer with pink noise base (tests low pass filter)",
+      "status": "success",
+      "duration": 2392
+    },
+    {
+      "name": "rain-birds-combined",
+      "file": "samples/vdev/rain-birds-combined.wav",
+      "description": "Rain and birds combined",
+      "status": "success",
+      "duration": 2911
+    },
+    {
+      "name": "birds-water-combined",
+      "file": "samples/vdev/birds-water-combined.wav",
+      "description": "Birds and water combined (tests shimmer fix)",
+      "status": "success",
+      "duration": 3990
+    },
+    {
+      "name": "all-ambient-layers",
+      "file": "samples/vdev/all-ambient-layers.wav",
+      "description": "All three ambient layers combined",
+      "status": "success",
+      "duration": 3991
+    },
+    {
+      "name": "high-intensity-rain",
+      "file": "samples/vdev/high-intensity-rain.wav",
+      "description": "High intensity rain to test limits",
+      "status": "success",
+      "duration": 2286
+    },
+    {
+      "name": "high-intensity-water",
+      "file": "samples/vdev/high-intensity-water.wav",
+      "description": "High intensity water to test low pass filter stability",
+      "status": "success",
+      "duration": 2245
+    },
+    {
+      "name": "high-variation-ambient",
+      "file": "samples/vdev/high-variation-ambient.wav",
+      "description": "High variation ambient layers",
+      "status": "success",
+      "duration": 2977
+    },
+    {
+      "name": "long-ambient-soundscape",
+      "file": "samples/vdev/long-ambient-soundscape.wav",
+      "description": "Long duration ambient soundscape for stability testing",
+      "status": "success",
+      "duration": 4932
+    },
+    {
+      "name": "white-noise-48khz",
+      "file": "samples/vdev/white-noise-48khz.wav",
+      "description": "White noise at 48kHz sample rate",
+      "status": "success",
+      "duration": 2435
+    },
+    {
+      "name": "pink-noise-22khz",
+      "file": "samples/vdev/pink-noise-22khz.wav",
+      "description": "Pink noise at 22kHz sample rate",
+      "status": "success",
+      "duration": 2182
+    }
+  ]
+}
