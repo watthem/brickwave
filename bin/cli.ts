@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import { generateNoise } from '../src/generateNoise.js';
 import { writeWav, applyEnvelope, convertToStereo } from '../src/wavWriter.js';
+import { generateRainLayer, generateBirdLayer, generateWaterLayer, mixAmbientLayers, LayerOptions } from '../src/ambientLayers.js';
 const VERSION = '0.1.0';
 const program = new Command();
 
@@ -17,6 +18,9 @@ program
   .option('--stereo', 'Generate stereo output')
   .option('--fade-in <seconds>', 'Fade in duration in seconds', parseFloat, 0)
   .option('--fade-out <seconds>', 'Fade out duration in seconds', parseFloat, 0)
+  .option('--ambient <layers>', 'Pacific Northwest ambient layers: rain,birds,water (comma-separated)')
+  .option('--ambient-intensity <level>', 'Ambient layer intensity (0-1)', parseFloat, 0.5)
+  .option('--ambient-variation <level>', 'Ambient layer variation (0-1)', parseFloat, 0.3)
   .parse(process.argv);
 
 const options = program.opts();
@@ -43,6 +47,43 @@ console.log(`🎵 Generating ${options.noise} noise...`);
 const startTime = Date.now();
 
 let noiseBuffer = generateNoise(options.noise, options.duration, options.samplerate, options.seed);
+
+// Generate ambient layers if requested
+const ambientLayers = [];
+if (options.ambient) {
+  const layerTypes = options.ambient.split(',').map((s: string) => s.trim());
+  const layerOptions: LayerOptions = {
+    intensity: options.ambientIntensity || 0.5,
+    variation: options.ambientVariation || 0.3,
+    seed: options.seed
+  };
+  
+  console.log('   🌲 Generating Pacific Northwest ambient layers...');
+  
+  for (const layerType of layerTypes) {
+    switch (layerType.toLowerCase()) {
+      case 'rain':
+        console.log('     ☔ Rain layer...');
+        ambientLayers.push(generateRainLayer(noiseBuffer, options.samplerate, layerOptions));
+        break;
+      case 'birds':
+        console.log('     🐦 Bird layer...');
+        ambientLayers.push(generateBirdLayer(noiseBuffer, options.samplerate, layerOptions));
+        break;
+      case 'water':
+        console.log('     🌊 Water layer...');
+        ambientLayers.push(generateWaterLayer(noiseBuffer, options.samplerate, layerOptions));
+        break;
+      default:
+        console.error(`   ⚠️  Unknown ambient layer: ${layerType}`);
+    }
+  }
+  
+  if (ambientLayers.length > 0) {
+    console.log('   🎵 Mixing ambient layers with base noise...');
+    noiseBuffer = mixAmbientLayers(noiseBuffer, ambientLayers);
+  }
+}
 
 // Apply envelope if requested
 if (options.fadeIn > 0 || options.fadeOut > 0) {
@@ -75,5 +116,8 @@ if (options.seed) {
 }
 if (options.fadeIn > 0 || options.fadeOut > 0) {
   console.log(`   🎚️  Envelope: ${options.fadeIn}s fade-in, ${options.fadeOut}s fade-out`);
+}
+if (ambientLayers.length > 0) {
+  console.log(`   🌲 Ambient layers: ${ambientLayers.map(l => l.description).join(', ')}`);
 }
 
