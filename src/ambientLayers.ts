@@ -55,14 +55,14 @@ export function generateRainLayer(
       const dropletIntensity = 0.1 + (rng.random() * 0.4); // Variable droplet size
       const frequency = 2000 + (rng.random() * 3000); // 2-5kHz impact frequency
       
-      // Create short droplet sound
+      // Create short droplet sound with smoother envelope
       for (let j = 0; j < dropletSamples && (i + j) < buffer.length; j++) {
         const t = j / sampleRate;
-        const envelope = Math.exp(-t * 200); // Fast decay
+        const envelope = Math.exp(-t * 150) * (1 - t / dropletDuration); // Smoother decay
         const oscillation = Math.sin(2 * Math.PI * frequency * t);
-        const noise = (rng.random() * 2 - 1) * 0.3;
+        const noise = (rng.random() * 2 - 1) * 0.2;
         
-        buffer[i + j] += (oscillation * 0.7 + noise * 0.3) * envelope * dropletIntensity * options.intensity;
+        buffer[i + j] += (oscillation * 0.8 + noise * 0.2) * envelope * dropletIntensity * options.intensity;
       }
     }
   }
@@ -124,7 +124,8 @@ export function generateBirdLayer(
       for (let j = 0; j < callSamples && (i + j) < buffer.length; j++) {
         const callTime = j / sampleRate;
         const envelope = Math.sin(Math.PI * callTime / callLength); // Bell curve envelope
-        const freq = frequency + Math.sin(2 * Math.PI * 5 * callTime) * modulation;
+        // Reduce modulation frequency to avoid rapid warbling
+        const freq = frequency + Math.sin(2 * Math.PI * 3 * callTime) * modulation;
         const signal = Math.sin(2 * Math.PI * freq * callTime);
         
         buffer[i + j] += signal * envelope * 0.3 * options.intensity;
@@ -158,19 +159,20 @@ export function generateWaterLayer(
   const baseFlow = 0.3; // Base water flow intensity
   const bubbleRate = 5 + (options.intensity * 15); // 5-20 bubbles per second
   
+  // Use a proper lowpass filter state instead of feedback
+  let filterState = 0;
+  
   for (let i = 0; i < buffer.length; i++) {
     const noiseLevel = Math.abs(baseNoise[i]);
     
     // Generate continuous water flow (filtered noise)
-    let waterNoise = rng.random() * 2 - 1;
-    // Apply simple lowpass filter for water-like sound
-    if (i > 0) {
-      waterNoise = waterNoise * 0.1 + buffer[i-1] * 0.9;
-    }
+    const rawNoise = rng.random() * 2 - 1;
+    // Apply proper lowpass filter without feedback oscillation
+    filterState = filterState * 0.95 + rawNoise * 0.05;
     
     // Modulate water intensity with base noise
     const flowIntensity = baseFlow + (noiseLevel * options.variation * 0.5);
-    buffer[i] = waterNoise * flowIntensity * options.intensity * 0.4;
+    buffer[i] = filterState * flowIntensity * options.intensity * 0.4;
     
     // Add occasional bubbles/splashes
     const bubbleChance = bubbleRate / sampleRate;
@@ -220,15 +222,11 @@ export function mixAmbientLayers(
     }
   });
   
-  // Normalize to prevent clipping
-  let maxLevel = 0;
+  // Soft limiting to prevent clipping without pumping
   for (let i = 0; i < mixed.length; i++) {
-    maxLevel = Math.max(maxLevel, Math.abs(mixed[i]));
-  }
-  
-  if (maxLevel > 1) {
-    for (let i = 0; i < mixed.length; i++) {
-      mixed[i] /= maxLevel;
+    // Soft tanh limiter instead of hard normalization
+    if (Math.abs(mixed[i]) > 0.95) {
+      mixed[i] = mixed[i] > 0 ? Math.tanh(mixed[i]) : -Math.tanh(-mixed[i]);
     }
   }
   
