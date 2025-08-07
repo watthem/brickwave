@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { generateNoise } from '../src/generateNoise.js';
 import { writeWav, applyEnvelope, convertToStereo } from '../src/wavWriter.js';
 import { generateRainLayer, generateBirdLayer, generateWaterLayer, mixAmbientLayers, LayerOptions } from '../src/ambientLayers.js';
+import { generateAIAmbientLayer, AILayerOptions } from '../src/aiLayers.js';
 const VERSION = '0.1.0';
 const program = new Command();
 
@@ -21,6 +22,9 @@ program
   .option('--ambient <layers>', 'Pacific Northwest ambient layers: rain,birds,water (comma-separated)')
   .option('--ambient-intensity <level>', 'Ambient layer intensity (0-1)', parseFloat, 0.5)
   .option('--ambient-variation <level>', 'Ambient layer variation (0-1)', parseFloat, 0.3)
+  .option('--ai-ambient <descriptions>', 'AI-generated ambient layers (comma-separated descriptions)')
+  .option('--ai-style <style>', 'AI layer style: natural, ethereal, cinematic, abstract', 'natural')
+  .option('--ai-intensity <level>', 'AI layer intensity (0-1)', parseFloat, 0.6)
   .parse(process.argv);
 
 const options = program.opts();
@@ -85,6 +89,34 @@ if (options.ambient) {
   if (ambientLayers.length > 0) {
     console.log('   🎵 Mixing ambient layers with base noise...');
     noiseBuffer = mixAmbientLayers(noiseBuffer, ambientLayers);
+  }
+}
+
+// Generate AI ambient layers if requested
+if (options.aiAmbient) {
+  const aiDescriptions = options.aiAmbient.split(',').map((s: string) => s.trim());
+  const aiOptions: AILayerOptions = {
+    intensity: options.aiIntensity || 0.6,
+    variation: options.ambientVariation || 0.3,
+    style: options.aiStyle as 'natural' | 'ethereal' | 'cinematic' | 'abstract',
+    seed: options.seed
+  };
+  
+  console.log('   🤖 Generating AI-enhanced ambient layers...');
+  
+  for (const description of aiDescriptions) {
+    try {
+      console.log(`     🎨 AI layer: "${description}"...`);
+      const aiLayer = await generateAIAmbientLayer(noiseBuffer, sampleRate, aiOptions, description);
+      ambientLayers.push(aiLayer);
+    } catch (error) {
+      console.error(`     ⚠️  AI layer failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  
+  if (ambientLayers.length > 0) {
+    console.log('   🎵 Mixing AI layers with existing audio...');
+    noiseBuffer = mixAmbientLayers(noiseBuffer, ambientLayers.slice(-aiDescriptions.length), 0.6, 0.4);
   }
 }
 
